@@ -8,4 +8,4 @@ RUN npm install
 
 ADD . /api
 
-CMD node server.js
+CMD npm start 
