@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const app = express()
 const WebProxy = require('./src/webProxy.js')
 const { PORT } = process.env
+const { KEY } = process.env
 
 app.get('/', verifyJWT, (req, res, next) => {
     var options = {
@@ -25,7 +26,7 @@ app.post('/login', (req, res, next) => {
     id: "1",
     username: 'username'
   }
-    var token = jwt.sign({user: user}, 'secretarg', {
+    var token = jwt.sign({user: user}, KEY , {
       expiresIn: 300 // expires in 5min
     });
     res.status(200).send({ auth: true, token: token });
