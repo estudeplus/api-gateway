@@ -22,11 +22,12 @@ class Service {
 
         const optionsKeys = Object.keys(options)
 
-        for(key in requiredKeys) {
+        requiredKeys.forEach((key) => {
             if(!key in optionsKeys) {
                 return new Error(`${key} is missing on args`)
             }
-        }
+
+        })
 
         this._options = options
     }
