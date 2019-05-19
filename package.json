@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/estudeplus/api-gateway#readme",
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "jsonwebtoken": "8.5.1"
   }
 }
