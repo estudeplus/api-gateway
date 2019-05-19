@@ -1,29 +1,22 @@
 'use strict'
 
 const http = require('http')
+const Service = require('./service.js')
 
 class WebProxy {
 
-    constructor(options) {
-        /* 
-            Example of options:
-            options = {
-                hostname: 'localhost',
-                port: 80,
-                path: '/',
-                method: 'GET',
-                headers: {}
-            }
-            docs: https://nodejs.org/api/http.html#http_http_request_options_callback
-        */
-        if(typeof(options) !== 'object') {
-            return new Error("options must be an object") 
+    constructor(service) {
+        if(!(service instanceof Service)) {
+            var message = "Error: args must be an instance of Service"
+            console.log(message)
+            throw new Error(message) 
         }
-        this._options = options
+        this._service = service 
     }
 
     requestOnTarget(clientResponse) {
-        const targetResponse = http.request(this._options, (res) => {
+        const options = this._service.options()
+        const targetResponse = http.request(options, (res) => {
             clientResponse.writeHead(res.statusCode, res.headers)
             res.pipe(clientResponse, {
                 end: true
@@ -32,6 +25,7 @@ class WebProxy {
         })
 		targetResponse.on('error', (err) => {
 			console.log(err)		
+            clientResponse.status(503).json({error: err.message})
 			return err
 		})
 
