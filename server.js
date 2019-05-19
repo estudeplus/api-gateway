@@ -21,16 +21,15 @@ app.get('/', verifyJWT, (req, res, next) => {
 })
 
 app.post('/login', (req, res, next) => {
-  //this user need be dynamic
-  const user ={
-    id: "1",
-    username: 'username'
-  }
-    var token = jwt.sign({user: user}, KEY , {
-      expiresIn: 300 // expires in 5min
+  //this user need coming in jsonformat
+  if(req.body.user === 'testUser' && req.body.pwd === 'testPwd'){
+    //this id represent user in database
+    const id = 1;
+    var token = jwt.sign({ id }, KEY , {
+      expiresIn: 300 // need make function for refresh the token after 300 sec
     });
     res.status(200).send({ auth: true, token: token });
-
+  }
   res.status(500).send('Invalid login!');
 })
 
