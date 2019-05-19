@@ -14,7 +14,6 @@ app.get('/', (req, res) => {
 app.get('/proxy', (req, res) => {
     var options = {
         hostname: 'hello',
-        port: 8000,
         path: req.url,
         method: req.method,
         headers: req.headers

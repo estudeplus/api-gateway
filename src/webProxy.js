@@ -6,8 +6,10 @@ const Service = require('./service.js')
 class WebProxy {
 
     constructor(service) {
-        if(!service instanceof Service) {
-            return new Error("args must be an instance of Service") 
+        if(!(service instanceof Service)) {
+            var message = "Error: args must be an instance of Service"
+            console.log(message)
+            throw new Error(message) 
         }
         this._service = service 
     }
@@ -23,6 +25,7 @@ class WebProxy {
         })
 		targetResponse.on('error', (err) => {
 			console.log(err)		
+            clientResponse.status(503).json({error: err.message})
 			return err
 		})
 

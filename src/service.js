@@ -15,7 +15,9 @@ class Service {
         */
 
         if(typeof(options) != 'object'){
-            return new Error("args must be an object") 
+            var message = "args must be an object"
+            console.log(message)
+            throw new Error(message) 
         }
 
         const requiredKeys = [ 'hostname', 'port', 'path', 'method' ]
@@ -23,8 +25,8 @@ class Service {
         const optionsKeys = Object.keys(options)
 
         requiredKeys.forEach((key) => {
-            if(!key in optionsKeys) {
-                return new Error(`${key} is missing on args`)
+            if(!key in requiredKeys) {
+                throw new Error(`${key} is missing on args`)
             }
 
         })
