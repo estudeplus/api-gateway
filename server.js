@@ -3,8 +3,9 @@
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const app = express()
-const WebProxy = require('./src/webProxy.js')
-const Service = require('./src/service.js')
+const WebProxy = require('./lib/webProxy.js')
+const Service = require('./lib/service.js')
+const startMongo = require('./src/mongo.js').startMongo
 
 const { PORT } = process.env
 const { KEY } = process.env
@@ -51,5 +52,6 @@ function verifyJWT(req, res, next){
 }
 
 app.listen(PORT, () => {
+    startMongo()
     console.log('Server running on port ' + PORT)
 })
