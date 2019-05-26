@@ -11,3 +11,10 @@ services:
     environment:
       PORT: 3000
       KEY: secretkey
+      MONGO_URL: mongodb://mongo:27017/gateway
+  mongo:
+    image: mongo:4
+    ports:
+      - 27017:27017 
+    volumes:
+      - ./.mongo-data:/data/db
