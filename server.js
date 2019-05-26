@@ -1,14 +1,20 @@
 'use strict'
 
+const mongoose = require('mongoose')
+const EventEmitter = require('events')
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const app = express()
 const WebProxy = require('./lib/webProxy.js')
 const Service = require('./lib/service.js')
 const startMongo = require('./src/mongo.js').startMongo
+const emitter = new EventEmitter();
+const UserModel = require('./src/model/users.js')
 
 const { PORT } = process.env
 const { KEY } = process.env
+
+emitter.on('eventRegister', eventRegister(logindata))
 
 app.get('/', (req, res) => {
     res.send({'status': 'ok'})
@@ -39,6 +45,22 @@ app.post('/login', (req, res, next) => {
   }
   res.status(500).send('Invalid login!');
 })
+
+app.post('/register', (req, res, next) =>   {
+  let logindata = req.body;
+  emitter.emit('eventRegister', logindata);
+  res.status(200)
+})
+
+function eventRegister(logindata){
+  const user = new UserModel({uuid: logindata.uuid, email: logindata.email, pwd: logindata.password})
+  user.save().then(()=>{
+    return 0;
+  })
+  .catch((err)=>{
+    throw err;
+  })
+}
 
 function verifyJWT(req, res, next){
   //verify if has token on header
