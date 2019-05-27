@@ -4,17 +4,36 @@ const mongoose = require('mongoose')
 const EventEmitter = require('events')
 const express = require('express')
 const jwt = require('jsonwebtoken')
-const app = express()
+const bodyParser = require('body-parser')
+    
 const WebProxy = require('./lib/webProxy.js')
 const Service = require('./lib/service.js')
 const startMongo = require('./src/mongo.js').startMongo
-const emitter = new EventEmitter();
 const UserModel = require('./src/model/users.js')
 
 const { PORT } = process.env
 const { KEY } = process.env
 
-emitter.on('eventRegister', eventRegister(logindata))
+const emitter = new EventEmitter();
+const app = express()
+
+app.use(bodyParser());
+
+function eventRegister(data){
+    const user = new UserModel({
+        uuid: data.uuid,
+        email: data.email,
+        pwd: data.password})
+
+  user.save().then(() => {
+    return 0;
+  })
+  .catch((err) => {
+    throw err;
+  })
+}
+
+emitter.on('eventRegister', eventRegister)
 
 app.get('/', (req, res) => {
     res.send({'status': 'ok'})
@@ -47,20 +66,12 @@ app.post('/login', (req, res, next) => {
 })
 
 app.post('/register', (req, res, next) =>   {
-  let logindata = req.body;
-  emitter.emit('eventRegister', logindata);
-  res.status(200)
-})
+  let data = req.body;
 
-function eventRegister(logindata){
-  const user = new UserModel({uuid: logindata.uuid, email: logindata.email, pwd: logindata.password})
-  user.save().then(()=>{
-    return 0;
-  })
-  .catch((err)=>{
-    throw err;
-  })
-}
+  emitter.emit('eventRegister', data);
+
+  res.status(200).send({'message': 'Event received'})
+})
 
 function verifyJWT(req, res, next){
   //verify if has token on header
@@ -73,7 +84,13 @@ function verifyJWT(req, res, next){
   });
 }
 
-app.listen(PORT, () => {
-    startMongo()
+app.listen(PORT, async () => {
+    try {
+        await startMongo()
+    } catch(err) {
+        console.log(err)
+        process.exit(1)
+    }
+
     console.log('Server running on port ' + PORT)
 })

@@ -12,6 +12,8 @@ services:
       PORT: 3000
       KEY: secretkey
       MONGO_URL: mongodb://mongo:27017/gateway
+    depends_on:
+      - mongo
   mongo:
     image: mongo:4
     ports:
