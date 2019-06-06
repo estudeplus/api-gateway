@@ -8,4 +8,6 @@ RUN npm install
 
 ADD . /api
 
+RUN npm link
+
 CMD npm start 

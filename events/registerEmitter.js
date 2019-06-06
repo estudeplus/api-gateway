@@ -1,5 +1,5 @@
 const EventEmitter = require('events')
-const UserModel = require('./model/users.js')
+const UserModel = require('../models/users.js')
 
 class RegisterEmitter extends EventEmitter {
     constructor() {

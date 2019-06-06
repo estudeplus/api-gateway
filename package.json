@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --use_strict server.js"
+    "start": "node --use_strict src/server.js",
+    "dev": "nodemon --use_strict src/server.js"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,8 @@
     "jsonwebtoken": "8.5.1",
     "mongoose": "5.5.10",
     "body-parser": "^1.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
   }
 }

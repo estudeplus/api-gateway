@@ -6,11 +6,10 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 const bodyParser = require('body-parser')
     
-const WebProxy = require('./lib/webProxy.js')
-const Service = require('./lib/service.js')
-const startMongo = require('./src/mongo.js').startMongo
-const UserModel = require('./src/model/users.js')
-const RegisterEmitter = require('./src/userEmitter.js')
+const WebProxy = require('../lib/webProxy.js')
+const Service = require('../lib/service.js')
+const startMongo = require('../config/mongo.js').startMongo
+const RegisterEmitter = require('../events/registerEmitter.js')
 
 const { PORT } = process.env
 const { KEY } = process.env
