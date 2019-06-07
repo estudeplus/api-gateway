@@ -6,34 +6,20 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 const bodyParser = require('body-parser')
     
-const WebProxy = require('./lib/webProxy.js')
-const Service = require('./lib/service.js')
-const startMongo = require('./src/mongo.js').startMongo
-const UserModel = require('./src/model/users.js')
+const WebProxy = require('../lib/webProxy.js')
+const Service = require('../lib/service.js')
+const startMongo = require('../config/mongo.js').startMongo
+const RegisterEmitter = require('../events/registerEmitter.js')
+const LogEmitter = require('../events/logEmitter.js')
 
 const { PORT } = process.env
 const { KEY } = process.env
 
-const emitter = new EventEmitter();
+const registerEmitter = new RegisterEmitter()
+const logEmitter = new LogEmitter()
 const app = express()
 
 app.use(bodyParser());
-
-function eventRegister(data){
-    const user = new UserModel({
-        uuid: data.uuid,
-        email: data.email,
-        pwd: data.password})
-
-  user.save().then(() => {
-    return 0;
-  })
-  .catch((err) => {
-    throw err;
-  })
-}
-
-emitter.on('eventRegister', eventRegister)
 
 app.get('/', (req, res) => {
     res.send({'status': 'ok'})
@@ -49,7 +35,17 @@ app.get('/proxy', verifyJWT, (req, res, next) => {
     };
     var service = new Service(options)
     var web = new WebProxy(service)
+
     web.proxy(req, res)
+
+    const logData = {
+        origin: req.hostname,
+        target: options.hostname,
+        date: Date.now()
+    }
+
+    logEmitter.emit(logData)
+
 })
 
 app.post('/login', (req, res, next) => {
@@ -68,7 +64,7 @@ app.post('/login', (req, res, next) => {
 app.post('/register', (req, res, next) =>   {
   let data = req.body;
 
-  emitter.emit('eventRegister', data);
+  registerEmitter.emit(data)
 
   res.status(200).send({'message': 'Event received'})
 })
