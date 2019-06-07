@@ -10,11 +10,13 @@ const WebProxy = require('../lib/webProxy.js')
 const Service = require('../lib/service.js')
 const startMongo = require('../config/mongo.js').startMongo
 const RegisterEmitter = require('../events/registerEmitter.js')
+const LogEmitter = require('../events/logEmitter.js')
 
 const { PORT } = process.env
 const { KEY } = process.env
 
-const registerEmitter = new RegisterEmitter();
+const registerEmitter = new RegisterEmitter()
+const logEmitter = new LogEmitter()
 const app = express()
 
 app.use(bodyParser());
@@ -23,7 +25,7 @@ app.get('/', (req, res) => {
     res.send({'status': 'ok'})
 })
 
-app.get('/proxy', verifyJWT, (req, res, next) => {
+app.get('/proxy', (req, res, next) => {
     var options = {
         hostname: 'hello',
         path: req.url,
@@ -33,7 +35,17 @@ app.get('/proxy', verifyJWT, (req, res, next) => {
     };
     var service = new Service(options)
     var web = new WebProxy(service)
+
     web.proxy(req, res)
+
+    const logData = {
+        origin: req.hostname,
+        target: options.hostname,
+        date: Date.now()
+    }
+
+    logEmitter.emit(logData)
+
 })
 
 app.post('/login', (req, res, next) => {

@@ -8,6 +8,7 @@ RUN npm install
 
 ADD . /api
 
+# To use local packages like they are globally
 RUN npm link
 
 CMD npm start 
