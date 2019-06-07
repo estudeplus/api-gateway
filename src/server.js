@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
     res.send({'status': 'ok'})
 })
 
-app.get('/proxy', (req, res, next) => {
+app.get('/proxy', verifyJWT, (req, res, next) => {
     var options = {
         hostname: 'hello',
         path: req.url,
