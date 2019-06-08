@@ -1,17 +1,15 @@
-version: '3'
+version: '3.5'
 
 services:
   api:
     build: .
     ports:
-      - 3000:3000
+      - ${PORT}:3000
     volumes:
       - .:/api
       - /api/node_modules
-    environment:
-      PORT: 3000
-      KEY: secretkey
-      MONGO_URL: mongodb://mongo:27017/gateway
+    env_file:
+      - .env
     command: npm run dev 
     depends_on:
       - mongo
