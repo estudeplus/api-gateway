@@ -18,17 +18,18 @@ class RegisterEmitter extends EventEmitter {
       })
         user.save()
             .then(() => {
+              console.log("user created")
                 return 0;
             })
             .catch((err) => {
                 throw err;
             })
+      })
     }
-
     emit(data) {
         super.emit(this._eventType, data)
     }
+  }
 
-}
 
 module.exports = RegisterEmitter
