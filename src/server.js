@@ -5,13 +5,13 @@ const EventEmitter = require('events')
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const bodyParser = require('body-parser')
-    
+const bcrypt = require('bcrypt')
 const WebProxy = require('../lib/webProxy.js')
 const Service = require('../lib/service.js')
 const startMongo = require('../config/mongo.js').startMongo
 const RegisterEmitter = require('../events/registerEmitter.js')
 const LogEmitter = require('../events/logEmitter.js')
-
+const UserModel = require('../models/users.js')
 const { PORT } = process.env
 const { KEY } = process.env
 
@@ -49,19 +49,34 @@ app.get('/proxy', verifyJWT, (req, res, next) => {
 })
 
 app.post('/login', (req, res, next) => {
-  //this user need coming in jsonformat
-  if(req.body.user === 'testUser' && req.body.pwd === 'testPwd'){
-    //this id represent user in database
-    const id = 1;
-    var token = jwt.sign({ id }, KEY , {
-      expiresIn: 300 // need make function for refresh the token after 300 sec
+  UserModel.findOne({ email: req.body.email})
+    .then((user) => {
+        if(!user){
+          return res.json(404, {
+            msg: 'User not found',
+          });
+        }
+        bcrypt.compare(req.body.password, user.password, (result, err) => {
+          if (!result) {
+          return res.json(401, {
+            error: 'Wrong credentials',
+          });
+        }
+        if (err) {
+          return res.json(500, { err });
+        }
+        const token = jwt.sign({ user }, KEY,
+          { expiresIn: '1h' },
+        );
+        return res.json(200, {
+          token,
+        });
+      });
     });
-    res.status(200).send({ auth: true, token: token });
-  }
-  res.status(500).send('Invalid login!');
-})
+});
 
 app.post('/register', (req, res, next) =>   {
+
   let data = req.body;
 
   registerEmitter.emit(data)
