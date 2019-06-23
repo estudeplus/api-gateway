@@ -5,7 +5,7 @@ const EventEmitter = require('events')
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const bodyParser = require('body-parser')
-    
+
 const WebProxy = require('../lib/webProxy.js')
 const Service = require('../lib/service.js')
 const startMongo = require('../config/mongo.js').startMongo
@@ -21,31 +21,78 @@ const app = express()
 
 app.use(bodyParser());
 
-app.get('/', (req, res) => {
-    res.send({'status': 'ok'})
-})
+var servicesInfo = {
+  profile: {
+    host: process.env.PROFILE_HOST,
+    port: process.env.PROFILE_PORT
+  },
+  monitoring: {
+    host: process.env.MONITORING_HOST,
+    port: process.env.MONITORING_PORT
+  },
+  subject: {
+    host: process.env.SUBJECT_HOST,
+    port: process.env.SUBJECT_PORT
+  }
+}
 
-app.get('/proxy', verifyJWT, (req, res, next) => {
+var services = Object.keys(servicesInfo)
+
+for (let server of services) {
+
+  var servicePath = `/${server}`
+
+  app.get(servicePath, (req, res) => {
+    var url = req.url.split(servicePath)[1]
     var options = {
-        hostname: 'hello',
-        path: req.url,
-        method: req.method,
-        headers: req.headers
+      hostname: servicesInfo[server].host,
+      port: servicesInfo[server].port,
+      path: url,
+      headers: req.headers,
+    }
 
-    };
     var service = new Service(options)
     var web = new WebProxy(service)
 
     web.proxy(req, res)
 
     const logData = {
-        origin: req.hostname,
-        target: options.hostname,
-        date: Date.now()
+      origin: req.hostname,
+      target: options.hostname,
+      date: Date.now()
     }
 
     logEmitter.emit(logData)
+  })
 
+  app.post(servicePath, (req, res) => {
+    var url = req.url.split(servicePath)[1]
+
+    var options = {
+      hostname: servicesInfo[server].host,
+      port: servicesInfo[server].port,
+      path: url,
+      headers: req.headers,
+    }
+
+    var service = new Service(options)
+    var web = new WebProxy(service)
+
+    web.proxy(req, res)
+
+    const logData = {
+      origin: req.hostname,
+      target: options.hostname,
+      date: Date.now()
+    }
+
+    logEmitter.emit(logData)
+  })
+
+}
+
+app.get('/', (req, res) => {
+    res.send({'status': 'ok'})
 })
 
 app.post('/login', (req, res, next) => {
