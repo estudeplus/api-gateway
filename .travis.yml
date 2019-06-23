@@ -1,0 +1,33 @@
+sudo: required
+services:
+- docker
+cache:
+  directories:
+  - "$HOME/google-cloud-sdk/"
+env:
+  global:
+  - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/deploy/gcloud-key.json
+  - ORG_NAME=estudeplus
+  - IMAGE_NAME=apigateway
+  - DEPLOYMENT=apigateway-deploy
+  - CONTAINER=apigateway-container
+  - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+  - secure: FvWROKPSjW/35cTizC6Of5YqAQJlijwr6WPMn+IELXhul0tYQI33troQuusRiPuCR2tVHwWIUUg5+3AJO0PjnhJAMoDjDUcEMDX91cqjcZUF96Kl/L5i+O/eecDFU6oHsmQiOJvDIsr6GWGQGdp/qn/pNGWeYuvLRBz1dpkrA6rwhzep14ChtQo7bXBcuPxmcJBKP6vi+ScGG022S5ASzZwGJFRrSaWRm2puDzqUD0WhLVBGRAMAjxYrIiPHYhBrOc//DO7kAnoU/sMx63io8pZOFcigOezKyn06Z78MrZx32JSzDH689WccJgGV8gMkVLdwVKJwwERSjf9krMyc0cace/RZBVWyrKt5VS21kQpKvp4v2MHC1nfQ/wXz5oJGNtF8wgMN3XU9Whr+xJXEhk8fHnCm+rbxsPKmjJ7wEHYmsXtwhINyMwmbZdWmLdG3mjooTPJl+kKm+FPRCB1cV1FGDppHDB4lk/OK49zyx1Yq1hxPIJOkix+41FU/DqogI77Ie9OUlQMhugnG+oo/fmsmXat3M4+R0uhNMNEryIFv3VeLK+ZM1/6+mNyrkvVzL+rz/WL4YDRDfWydLrUZThj2AT1fHDN+S85psRQd/mcYVzKJeUOo2Sq8qUk7WtB6SsrJtoX3i/bq0nrVwGWdqnC1lPPpubwfRkQHYodBGFE=
+script:
+- docker build -t ${ORG_NAME}/${IMAGE_NAME}:$TRAVIS_COMMIT .
+before_deploy:
+- if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; curl
+  https://sdk.cloud.google.com | bash > /dev/null; fi
+- source $HOME/google-cloud-sdk/path.bash.inc
+- gcloud --quiet components update kubectl
+deploy:
+- provider: script
+  script: chmod +x deploy/deploy.sh && bash deploy/deploy.sh
+  skip_cleanup: true
+  on:
+    branch: master 
+notifications:
+  email: false
+before_install:
+- openssl aes-256-cbc -K $encrypted_0e8f922748df_key -iv $encrypted_0e8f922748df_iv
+  -in deploy/gcloud-key.json.enc -out deploy/gcloud-key.json -d
