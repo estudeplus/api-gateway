@@ -50,6 +50,7 @@ services.forEach((server) => {
       port: servicesInfo[server].port,
       path: url,
       headers: req.headers,
+      method: req.method
     }
 
     var service = new Service(options)
@@ -74,6 +75,7 @@ services.forEach((server) => {
       port: servicesInfo[server].port,
       path: url,
       headers: req.headers,
+      method: req.method
     }
 
     var service = new Service(options)
