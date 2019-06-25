@@ -11,6 +11,7 @@ const startMongo = require('../config/mongo.js').startMongo
 const RegisterEmitter = require('../events/registerEmitter.js')
 const LogEmitter = require('../events/logEmitter.js')
 const verifyJWT = require('./auth.js')
+const LogModel = require('../models/logs.js')
 
 const { PORT } = process.env
 const { KEY } = process.env
@@ -114,6 +115,15 @@ app.post('/register', (req, res, next) =>   {
   registerEmitter.emit(data)
 
   res.status(200).send({'message': 'Event received'})
+})
+
+app.get('/logs', (req, res) => {
+  LogModel.find({}, (err, logs) => {
+    if(err) {
+      res.send({error: err})
+    }
+    res.send(logs)
+  })
 })
 
 app.listen(PORT, async () => {
