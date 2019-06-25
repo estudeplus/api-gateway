@@ -39,11 +39,11 @@ var servicesInfo = {
 
 var services = Object.keys(servicesInfo)
 
-for (let server of services) {
+services.forEach((server) => {
 
   var servicePath = `/${server}`
 
-  app.get(servicePath, (req, res) => {
+  app.get(`${servicePath}*`, (req, res) => {
     var url = req.url.split(servicePath)[1]
     var options = {
       hostname: servicesInfo[server].host,
@@ -66,7 +66,7 @@ for (let server of services) {
     logEmitter.emit(logData)
   })
 
-  app.post(servicePath, (req, res) => {
+  app.post(`${servicePath}*`, (req, res) => {
     var url = req.url.split(servicePath)[1]
 
     var options = {
@@ -89,8 +89,7 @@ for (let server of services) {
 
     logEmitter.emit(logData)
   })
-
-}
+})
 
 app.get('/', (req, res) => {
     res.send({'status': 'ok'})
