@@ -1,12 +1,11 @@
 'use strict'
 
+const axios = require('axios');
 const mongoose = require('mongoose')
 const EventEmitter = require('events')
 const express = require('express')
 const bodyParser = require('body-parser')
 
-const WebProxy = require('../lib/webProxy.js')
-const Service = require('../lib/service.js')
 const startMongo = require('../config/mongo.js').startMongo
 const RegisterEmitter = require('../events/registerEmitter.js')
 const LogEmitter = require('../events/logEmitter.js')
@@ -23,18 +22,9 @@ const app = express()
 app.use(bodyParser());
 
 var servicesInfo = {
-  profile: {
-    host: process.env.PROFILE_HOST,
-    port: process.env.PROFILE_PORT
-  },
-  monitoring: {
-    host: process.env.MONITORING_HOST,
-    port: process.env.MONITORING_PORT
-  },
-  subject: {
-    host: process.env.SUBJECT_HOST,
-    port: process.env.SUBJECT_PORT
-  }
+  profile: process.env.PROFILE_URL,
+  monitoring: process.env.MONITORING_URL,
+  subject: process.env.SUBJECT_URL,
 }
 
 var services = Object.keys(servicesInfo)
@@ -42,25 +32,28 @@ var services = Object.keys(servicesInfo)
 services.forEach((server) => {
 
   var servicePath = `/${server}`
+	var baseURL =  servicesInfo[server]
+	var api = axios.create({ baseURL: baseURL})
 
   app.get(`${servicePath}*`, (req, res) => {
     var url = req.url.split(servicePath)[1]
     var options = {
-      hostname: servicesInfo[server].host,
-      port: servicesInfo[server].port,
-      path: url,
+      url: url,
       headers: req.headers,
       method: req.method
     }
 
-    var service = new Service(options)
-    var web = new WebProxy(service)
-
-    web.proxy(req, res)
-
+		api.request(options)
+			.then((response) => {
+				res.send(response.data)
+			})
+			.catch((err) => {
+				res.send(err)
+			})
+			
     const logData = {
       origin: req.hostname,
-      target: options.hostname,
+      target: baseURL + url,
       date: Date.now()
     }
 
@@ -71,21 +64,23 @@ services.forEach((server) => {
     var url = req.url.split(servicePath)[1]
 
     var options = {
-      hostname: servicesInfo[server].host,
-      port: servicesInfo[server].port,
-      path: url,
+      url: url,
       headers: req.headers,
-      method: req.method
+      method: req.method,
+			data: req.body
     }
 
-    var service = new Service(options)
-    var web = new WebProxy(service)
-
-    web.proxy(req, res)
-
+		api.request(options)
+			.then((response) => {
+				res.status(response.status).send(response.data)
+			})
+			.catch((err) => {
+				res.status(err.response.status).send(err.response.data)
+			})
+			
     const logData = {
       origin: req.hostname,
-      target: options.hostname,
+      target: baseURL + url,
       date: Date.now()
     }
 
