@@ -4,8 +4,10 @@ WORKDIR /api
 
 ADD package.json /api
 
-RUN npm install && apk add --update python python-dev py2-pip autoconf automake g++ make --no-cache \
+RUN apk add --update python python-dev py2-pip autoconf automake g++ make --no-cache \
 && pip install py-bcrypt
+
+RUN npm install
 
 ADD . /api
 
