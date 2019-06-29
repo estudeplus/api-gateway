@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apigateway
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 3000 
+      targetPort: 3000 
+  selector:
+    app: apigateway 
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: apigateway-deploy 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: apigateway 
+    spec:
+      containers:
+      - image: estudeplus/apigateway
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /
+            port: 3000
+            scheme: HTTP
+        envFrom:
+          - configMapRef:
+              name: apigateway-config
+              optional: false
+        name: apigateway-container
+        ports:
+          - containerPort: 3000
