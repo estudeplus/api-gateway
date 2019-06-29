@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt')
 const EventEmitter = require('events')
 const UserModel = require('../models/users.js')
 
@@ -9,24 +10,26 @@ class RegisterEmitter extends EventEmitter {
     }
 
     addNewUser(data) {
+      bcrypt.hash(data.password, 10). then((hash) => {
         const user = new UserModel({
-            uuid: data.uuid,
-            email: data.email,
-            pwd: data.password})
-
+          email: data.email,
+          uuid: data.uuid,
+          password: hash,
+      })
         user.save()
             .then(() => {
+              console.log("user created")
                 return 0;
             })
             .catch((err) => {
                 throw err;
             })
+      })
     }
-
     emit(data) {
         super.emit(this._eventType, data)
     }
+  }
 
-}
 
 module.exports = RegisterEmitter
