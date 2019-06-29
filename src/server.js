@@ -5,7 +5,8 @@ const mongoose = require('mongoose')
 const EventEmitter = require('events')
 const express = require('express')
 const bodyParser = require('body-parser')
-
+const bcrypt = require('bcrypt')
+const UserModel = require('../models/users.js')
 const startMongo = require('../config/mongo.js').startMongo
 const RegisterEmitter = require('../events/registerEmitter.js')
 const LogEmitter = require('../events/logEmitter.js')
@@ -93,19 +94,30 @@ app.get('/', (req, res) => {
 })
 
 app.post('/login', (req, res, next) => {
-  //this user need coming in jsonformat
-  if(req.body.user === 'testUser' && req.body.pwd === 'testPwd'){
-    //this id represent user in database
-    const id = 1;
-    var token = jwt.sign({ id }, KEY , {
-      expiresIn: 300 // need make function for refresh the token after 300 sec
+  UserModel.findOne({ email: req.body.email})
+    .then((user) => {
+      if(!user){
+          return res.json(404, {
+            msg: 'User not found',
+          });
+        }
+        var result = bcrypt.compareSync(req.body.password, user.password)
+        if (!result) {
+          return res.json(401, {
+            error: 'Wrong credentials',
+          });
+        }
+        const token = jwt.sign({ user }, KEY,
+          { expiresIn: '1h' },
+        );
+        return res.json(200, {
+          token,
+        });
     });
-    res.status(200).send({ auth: true, token: token });
-  }
-  res.status(500).send('Invalid login!');
-})
+});
 
 app.post('/register', (req, res, next) =>   {
+
   let data = req.body;
 
   registerEmitter.emit(data)
