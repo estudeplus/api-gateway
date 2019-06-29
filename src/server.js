@@ -51,19 +51,16 @@ app.get('/proxy', verifyJWT, (req, res, next) => {
 app.post('/login', (req, res, next) => {
   UserModel.findOne({ email: req.body.email})
     .then((user) => {
-        if(!user){
+      if(!user){
           return res.json(404, {
             msg: 'User not found',
           });
         }
-        bcrypt.compare(req.body.password, user.password, (result, err) => {
-          if (!result) {
+        var result = bcrypt.compareSync(req.body.password, user.password)
+        if (!result) {
           return res.json(401, {
             error: 'Wrong credentials',
           });
-        }
-        if (err) {
-          return res.json(500, { err });
         }
         const token = jwt.sign({ user }, KEY,
           { expiresIn: '1h' },
@@ -71,7 +68,6 @@ app.post('/login', (req, res, next) => {
         return res.json(200, {
           token,
         });
-      });
     });
 });
 
