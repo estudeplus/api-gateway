@@ -6,6 +6,8 @@ const EventEmitter = require('events')
 const express = require('express')
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
+const cors = require('cors')
+
 const UserModel = require('../models/users.js')
 const startMongo = require('../config/mongo.js').startMongo
 const RegisterEmitter = require('../events/registerEmitter.js')
@@ -22,7 +24,8 @@ const registerEmitter = new RegisterEmitter()
 const logEmitter = new LogEmitter()
 const app = express()
 
-app.use(bodyParser());
+app.use(bodyParser())
+app.use(cors())
 
 var servicesInfo = {
   profile: process.env.PROFILE_URL,
