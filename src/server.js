@@ -29,7 +29,7 @@ app.use(cors())
 
 var servicesInfo = {
   profile: process.env.PROFILE_URL,
-  monitoring: process.env.MONITORING_URL,
+  monitoring_management: process.env.MONITORING_URL,
   subject: process.env.SUBJECT_URL,
 }
 
